@@ -7,7 +7,7 @@ public class Lexer
 
     public Lexer(string raw)
     {
-        this.raw = raw;
+        this.raw = raw.Trim();
         current = 0;
     }
 
@@ -15,52 +15,87 @@ public class Lexer
     {
         List<Lextoken> tokens = new List<Lextoken>();
 
-        string buff = "";
-        LextokenType type = LextokenType.Undefined;
         while (current < raw.Length)
         {
-            char c = consume();
+            char c = peek();
 
-            if (char.IsNumber(c))
+            if (char.IsDigit(c))
             {
-                type = LextokenType.Number;
-                buff += c;
+                string buff = consume().ToString();
+                while (char.IsDigit(peek()))
+                {
+                    buff += consume();
+                }
+                tokens.Add(new Lextoken(buff, LextokenType.Number));
             }
-            else if ((type == LextokenType.Undefined && char.IsLetter(c)) ||
-                    (type == LextokenType.Identifier && char.IsLetterOrDigit(c)))
+            else if (char.IsLetter(c))
             {
-                type = LextokenType.Identifier;
-                buff += c;
-            }
-            else if (c == '=' && type == LextokenType.Undefined)
-            {
-                type = LextokenType.Assignment;
-                buff += c;
-            }
-            else if (c == '=' && type == LextokenType.Assignment)
-            {
-                type = LextokenType.BinaryOperator;
-                buff += c;
-            }
-            else if (char.IsWhiteSpace(c))
-            {
+                string buff = consume().ToString();
+                while (char.IsLetterOrDigit(peek()))
+                {
+                    buff += consume();
+                }
+                LextokenType type = (
+                    is_keyword(buff) ? LextokenType.Keyword : 
+                                       LextokenType.Identifier);
                 tokens.Add(new Lextoken(buff, type));
-                buff = "";
-                type = LextokenType.Undefined;
+            }
+            else if (c == '"')
+            {
+                consume();
+                string buff = "";
+                while (peek() != '"')
+                {
+                    buff += consume();
+                }
+                consume();
+                tokens.Add(new Lextoken(buff, LextokenType.String));
+            }
+            else if (c == '=' && peek(1) != '=')
+            {
+                consume();
+                tokens.Add(new Lextoken("=", LextokenType.Assignment));
+            }
+            else if (c == '=' && peek(1) == '=')
+            {
+                consume();
+                consume();
+                tokens.Add(new Lextoken("==", LextokenType.BinaryOperator));
+            }
+            else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '%')
+            {
+                string buff = consume().ToString();
+                if (peek() == '+' || peek() == '-' || peek() == '=')
+                {
+                    buff += consume(); 
+                }
+                tokens.Add(new Lextoken(buff, LextokenType.MathOperator));
+            }
+            else if (c == '(' || c == '[' || c == '{')
+            {
+                tokens.Add(new Lextoken(consume().ToString(), LextokenType.OpenParenthesis));
+            }
+            else if (c == ')' || c == ']' || c == '}')
+            {
+                tokens.Add(new Lextoken(consume().ToString(), LextokenType.ClosedParenthesis));
+            }
+            else if (char.IsWhiteSpace(c) || c == ';')
+            {
+                consume();
             }
             else
             {
-                throw new Exception($"Undefined token type. (\"{buff}\")");
+                throw new Exception($"Syntax error (Undefined lex-token: \"{c}\")");
             }
-        }
-        if (type != LextokenType.Undefined)
-        {
-            tokens.Add(new Lextoken(buff, type));
-            buff = "";
-            type = LextokenType.Undefined;
         }
 
         return tokens;
+    }
+
+    private bool is_keyword(string value)
+    {
+        return value == "if" ||
+               value == "else";
     }
 
     private char peek(int ahead = 0) => raw[current + ahead];

@@ -21,4 +21,9 @@ public enum LextokenType
     Identifier = 1,
     Assignment = 2,
     BinaryOperator = 3,
+    MathOperator = 4,
+    OpenParenthesis = 5,
+    ClosedParenthesis = 6,
+    Keyword = 7,
+    String = 8,
 }

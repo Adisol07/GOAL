@@ -15,7 +15,7 @@ class Program
         CheckIntegrity();
         // AnsiConsole.Write(new FigletText("GOAL").Centered().Color(Color.Green3_1));
 
-        Lexer lexer = new Lexer(File.ReadAllText("~/Goals/a.goal".ReplacePath()));
+        Lexer lexer = new Lexer(File.ReadAllText("$/a.goal".ReplacePath()));
         Console.WriteLine(JsonConvert.SerializeObject(lexer.Tokenize()));
 
         // await AnsiConsole.Progress()
