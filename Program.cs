@@ -16,7 +16,9 @@ class Program
         // AnsiConsole.Write(new FigletText("GOAL").Centered().Color(Color.Green3_1));
 
         Lexer lexer = new Lexer(File.ReadAllText("$/a.goal".ReplacePath()));
-        Console.WriteLine(JsonConvert.SerializeObject(lexer.Tokenize()));
+        Console.WriteLine(JsonConvert.SerializeObject(lexer.Tokenize(), Formatting.Indented));
+        Parser parser = new Parser(lexer.Tokenize());
+        Console.WriteLine(JsonConvert.SerializeObject(parser.Parse(), Formatting.Indented));
 
         // await AnsiConsole.Progress()
         //     .AutoRefresh(true)
