@@ -10,10 +10,28 @@ class Program
     static string base_path = app_path;
     static string usr = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         CheckIntegrity();
-        AnsiConsole.Write(new FigletText("BIG").Centered().Color(Color.Red));
+        // AnsiConsole.Write(new FigletText("GOAL").Centered().Color(Color.Green3_1));
+
+        Lexer lexer = new Lexer(File.ReadAllText("~/Goals/a.goal".ReplacePath()));
+        Console.WriteLine(JsonConvert.SerializeObject(lexer.Tokenize()));
+
+        // await AnsiConsole.Progress()
+        //     .AutoRefresh(true)
+        //     .AutoClear(true)
+        //     .StartAsync(async ctx =>
+        //     {
+        //         var task = ctx.AddTask("Downloading", maxValue: 100);
+        //         while (!task.IsFinished)
+        //         {
+        //             task.Increment(1);
+        //             await Task.Delay(250);
+        //         }
+        //     }
+        // );
+        //string p = AnsiConsole.Prompt<string>(new TextPrompt<string>(""));
     }
 
     static void CheckIntegrity()
