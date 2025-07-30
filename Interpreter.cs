@@ -37,9 +37,7 @@ public class Interpreter
         while (current < tokens.Count)
         {
             IParsetoken instruction = tokens[current++];
-
             await ExecuteSingle(this, instruction);
-
             await Task.Delay(1);
         }
     }
@@ -115,6 +113,16 @@ public class Interpreter
                     await ExecuteSingle(interpreter, instr);
                 }
                 foreach (IParsetoken instr in frr.Change)
+                {
+                    await ExecuteSingle(interpreter, instr);
+                }
+            }
+        }
+        else if (instruction is While whl)
+        {
+            while (whl.Evaluate(interpreter))
+            {
+                foreach (IParsetoken instr in whl.Tokens)
                 {
                     await ExecuteSingle(interpreter, instr);
                 }
