@@ -36,9 +36,19 @@ public class Lexer
                 {
                     buff += consume();
                 }
-                LextokenType type = (
-                    is_keyword(buff) ? LextokenType.Keyword :
-                                       LextokenType.Identifier);
+                LextokenType type = LextokenType.Identifier;
+                if (is_keyword(buff))
+                {
+                    type = LextokenType.Keyword;
+                }
+                else if (is_boolean(buff) && bool.Parse(buff) == true)
+                {
+                    type = LextokenType.True;
+                }
+                else if (is_boolean(buff) && bool.Parse(buff) == false)
+                {
+                    type = LextokenType.False;
+                }
                 tokens.Add(new Lextoken(buff, type));
             }
             else if (c == '"')
@@ -62,6 +72,26 @@ public class Lexer
                 consume();
                 consume();
                 tokens.Add(new Lextoken("==", LextokenType.BinaryOperator));
+            }
+            else if (c == '!' && peek(1) == '=')
+            {
+                consume();
+                consume();
+                tokens.Add(new Lextoken("!=", LextokenType.BinaryOperator));
+            }
+            else if (c == '<')
+            {
+                string buff = consume().ToString();
+                if (peek() == '=')
+                    buff += consume();
+                tokens.Add(new Lextoken(buff, LextokenType.BinaryOperator));
+            }
+            else if (c == '>')
+            {
+                string buff = consume().ToString();
+                if (peek() == '=')
+                    buff += consume();
+                tokens.Add(new Lextoken(buff, LextokenType.BinaryOperator));
             }
             else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '%')
             {
@@ -101,6 +131,12 @@ public class Lexer
     {
         return value == "if" ||
                value == "else";
+    }
+
+    private bool is_boolean(string value)
+    {
+        return value.ToLower() == "true" || 
+               value.ToLower() == "false";
     }
 
     private char peek(int ahead = 0) => raw[current + ahead];

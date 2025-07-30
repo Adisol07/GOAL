@@ -27,4 +27,6 @@ public enum LextokenType
     Keyword = 7,
     String = 8,
     EndStatement = 9,
+    True = 10,
+    False = 11,
 }

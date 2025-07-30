@@ -19,6 +19,9 @@ class Program
         Console.WriteLine(JsonConvert.SerializeObject(lexer.Tokenize(), Formatting.Indented));
         Parser parser = new Parser(lexer.Tokenize());
         Console.WriteLine(JsonConvert.SerializeObject(parser.Parse(), Formatting.Indented));
+        Interpreter interpreter = new Interpreter();
+        await interpreter.Execute(parser.Parse());
+        Console.WriteLine(JsonConvert.SerializeObject(interpreter.Variables));
 
         // await AnsiConsole.Progress()
         //     .AutoRefresh(true)
