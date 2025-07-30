@@ -11,11 +11,22 @@ public class Interpreter
 {
     private int current = 0;
 
+    public static Dictionary<string, Func<string[], dynamic[]>> Functions { get; set; } = new Dictionary<string, Func<string[], dynamic[]>>();
+
     public List<IParsetoken> Instructions { get; private set; } = new List<IParsetoken>();
     public Dictionary<string, dynamic> Variables { get; set; } = new Dictionary<string, dynamic>();
 
     public Interpreter()
-    { }
+    { 
+        if (!Functions.ContainsKey("print"))
+        {
+            Functions.Add("print", (args) =>
+            {
+                Console.WriteLine(args[0]);
+                return null!;
+            });
+        }
+    }
 
     public async Task Execute(List<IParsetoken> tokens)
     {
@@ -45,6 +56,10 @@ public class Interpreter
                     default:
                         throw new Exception($"Invalid assignment operator.");
                 }
+            }
+            else if (instruction is FunctionCall funcall)
+            {
+                dynamic result = Functions[funcall.Name.Value].Invoke(funcall.Prepare(this));
             }
 
             await Task.Delay(1);

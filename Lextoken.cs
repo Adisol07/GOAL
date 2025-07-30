@@ -29,4 +29,5 @@ public enum LextokenType
     EndStatement = 9,
     True = 10,
     False = 11,
+    Punctuation = 12,
 }

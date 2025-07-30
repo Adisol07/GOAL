@@ -1,4 +1,6 @@
-﻿namespace GOAL;
+﻿using Newtonsoft.Json;
+
+namespace GOAL;
 
 public class Parser
 {
@@ -33,6 +35,20 @@ public class Parser
                 }
                 consume();
                 tokens.Add(new Parsetokens.VariableAssignment(name, assignment_type, statement));
+            }
+            else if (t.Type == LextokenType.Identifier &&
+                     peek(1).Type == LextokenType.OpenParenthesis)
+            {
+                Lextoken name = consume();
+                List<Lextoken> args = new List<Lextoken>();
+                consume();
+                while (peek().Type != LextokenType.EndStatement)
+                {
+                    args.Add(consume());
+                }
+                args.RemoveAt(args.Count - 1);
+                consume();
+                tokens.Add(new Parsetokens.FunctionCall(name, args));
             }
             else
             {
