@@ -13,6 +13,7 @@ public class Lexer
 
     public List<Lextoken> Tokenize()
     {
+        current = 0;
         List<Lextoken> tokens = new List<Lextoken>();
 
         while (current < raw.Length)
@@ -79,7 +80,11 @@ public class Lexer
             {
                 tokens.Add(new Lextoken(consume().ToString(), LextokenType.ClosedParenthesis));
             }
-            else if (char.IsWhiteSpace(c) || c == ';')
+            else if (c == ';')
+            {
+                tokens.Add(new Lextoken(consume().ToString(), LextokenType.EndStatement));
+            }
+            else if (char.IsWhiteSpace(c))
             {
                 consume();
             }

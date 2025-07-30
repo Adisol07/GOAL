@@ -26,4 +26,5 @@ public enum LextokenType
     ClosedParenthesis = 6,
     Keyword = 7,
     String = 8,
+    EndStatement = 9,
 }
