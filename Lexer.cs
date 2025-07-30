@@ -36,7 +36,7 @@ public class Lexer
                     buff += consume();
                 }
                 LextokenType type = (
-                    is_keyword(buff) ? LextokenType.Keyword : 
+                    is_keyword(buff) ? LextokenType.Keyword :
                                        LextokenType.Identifier);
                 tokens.Add(new Lextoken(buff, type));
             }
@@ -67,7 +67,7 @@ public class Lexer
                 string buff = consume().ToString();
                 if (peek() == '+' || peek() == '-' || peek() == '=')
                 {
-                    buff += consume(); 
+                    buff += consume();
                 }
                 tokens.Add(new Lextoken(buff, LextokenType.MathOperator));
             }
