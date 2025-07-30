@@ -112,7 +112,53 @@ public class Parser
             else if (t.Type == LextokenType.Keyword &&
                      t.Value == "for")
             {
+                consume();
+                consume();
+                List<Lextoken> declaration = new List<Lextoken>();
+                List<Lextoken> condition = new List<Lextoken>();
+                List<Lextoken> change = new List<Lextoken>();
 
+                while (peek().Type != LextokenType.EndStatement)
+                {
+                    declaration.Add(consume());
+                }
+                declaration.Add(consume());
+                while (peek().Type != LextokenType.EndStatement)
+                {
+                    condition.Add(consume());
+                }
+                consume();
+                while (peek().Type != LextokenType.OpenParenthesis && peek().Value != "{")
+                {
+                    change.Add(consume());
+                }
+                change.RemoveAt(change.Count - 1);
+                change.Add(new Lextoken(";", LextokenType.EndStatement));
+                List<Lextoken> for_tokens = new List<Lextoken>();
+                consume();
+                int open_brackets = 1;
+                while (open_brackets > 0)
+                {
+                    if (peek().Type == LextokenType.OpenParenthesis && peek().Value == "{")
+                    {
+                        open_brackets++;
+                    }
+                    if (peek().Type == LextokenType.ClosedParenthesis && peek().Value == "}")
+                    {
+                        open_brackets--;
+                    }
+
+                    for_tokens.Add(consume());
+                }
+
+                Parser for_decl_parser = new Parser(declaration);
+                List<IParsetoken> decl = for_decl_parser.Parse();
+                Parser for_change_parser = new Parser(change);
+                List<IParsetoken> chng = for_change_parser.Parse();
+                Parser for_parser = new Parser(for_tokens);
+                List<IParsetoken> for_parsetokens = for_parser.Parse();
+
+                tokens.Add(new Parsetokens.For(decl, condition, chng, for_parsetokens));
             }
             else
             {

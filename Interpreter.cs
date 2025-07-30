@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GOAL.Parsetokens;
+using Newtonsoft.Json;
 
 namespace GOAL;
 
@@ -37,54 +38,87 @@ public class Interpreter
         {
             IParsetoken instruction = tokens[current++];
 
-            if (instruction is VariableAssignment varass)
-            {
-                if (!Variables.ContainsKey(varass.Name.Value))
-                    Variables.Add(varass.Name.Value, null!);
-
-                switch (varass.Type.Value)
-                {
-                    case "=":
-                        Variables[varass.Name.Value] = varass.Evaluate(this);
-                        break;
-                    case "+=":
-                        Variables[varass.Name.Value] += varass.Evaluate(this);
-                        break;
-                    case "-=":
-                        Variables[varass.Name.Value] -= varass.Evaluate(this);
-                        break;
-                    default:
-                        throw new Exception($"Invalid assignment operator.");
-                }
-            }
-            else if (instruction is FunctionCall funcall)
-            {
-                dynamic result = Functions[funcall.Name.Value].Invoke(funcall.Prepare(this));
-            }
-            else if (instruction is Selection sel)
-            {
-                if (sel.Evaluate(this))
-                {
-                    Instructions.InsertRange(current, sel.Tokens);
-                }
-                else
-                {
-                    foreach (Selection elseif in sel.ElseIfs)
-                    {
-                        if (elseif.Evaluate(this))
-                        {
-                            Instructions.InsertRange(current, elseif.Tokens);
-                            break;
-                        }
-                    }
-                    if (sel.Else != null)
-                    {
-                        Instructions.InsertRange(current, sel.Else.Tokens);
-                    }
-                }
-            }
+            await ExecuteSingle(this, instruction);
 
             await Task.Delay(1);
+        }
+    }
+    public async static Task ExecuteSingle(Interpreter interpreter, IParsetoken instruction)
+    {
+        if (instruction is VariableAssignment varass)
+        {
+            if (!interpreter.Variables.ContainsKey(varass.Name.Value))
+                interpreter.Variables.Add(varass.Name.Value, null!);
+
+            switch (varass.Type.Value)
+            {
+                case "=":
+                    interpreter.Variables[varass.Name.Value] = varass.Evaluate(interpreter);
+                    break;
+                case "+=":
+                    interpreter.Variables[varass.Name.Value] += varass.Evaluate(interpreter);
+                    break;
+                case "-=":
+                    interpreter.Variables[varass.Name.Value] -= varass.Evaluate(interpreter);
+                    break;
+                default:
+                    throw new Exception($"Invalid assignment operator.");
+            }
+        }
+        else if (instruction is FunctionCall funcall)
+        {
+            dynamic result = Functions[funcall.Name.Value].Invoke(funcall.Prepare(interpreter));
+        }
+        else if (instruction is Selection sel)
+        {
+            if (sel.Evaluate(interpreter))
+            {
+                foreach (IParsetoken instr in sel.Tokens)
+                {
+                    await ExecuteSingle(interpreter, instr);
+                }
+            }
+            else
+            {
+                bool found_elseif = false;
+                foreach (Selection elseif in sel.ElseIfs)
+                {
+                    if (elseif.Evaluate(interpreter))
+                    {
+                        foreach (IParsetoken instr in elseif.Tokens)
+                        {
+                            await ExecuteSingle(interpreter, instr);
+                        }
+                        found_elseif = true;
+                        break;
+                    }
+                }
+                if (sel.Else != null && !found_elseif)
+                {
+                    foreach (IParsetoken instr in sel.Else.Tokens)
+                    {
+                        await ExecuteSingle(interpreter, instr);
+                    }
+                }
+            }
+        }
+        else if (instruction is For frr)
+        {
+            foreach (IParsetoken instr in frr.Declaration)
+            {
+                await ExecuteSingle(interpreter, instr);
+            }
+            while (frr.Evaluate(interpreter))
+            {
+                foreach (IParsetoken instr in frr.Tokens)
+                {
+                    await ExecuteSingle(interpreter, instr);
+                }
+                foreach (IParsetoken instr in frr.Change)
+                {
+                    await ExecuteSingle(interpreter, instr);
+                }
+            }
         }
     }
 }
