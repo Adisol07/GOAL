@@ -134,7 +134,9 @@ public class Lexer
     private bool is_keyword(string value)
     {
         return value == "if" ||
-               value == "else";
+               value == "else" ||
+               value == "elseif" ||
+               value == "for";
     }
 
     private bool is_boolean(string value)

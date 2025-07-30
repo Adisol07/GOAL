@@ -61,16 +61,19 @@ public class Parser
                 tokens.Add(new Parsetokens.FunctionCall(name, args));
             }
             else if (t.Type == LextokenType.Keyword &&
-                     t.Value == "if")
+                    (t.Value == "if" || t.Value == "elseif" || t.Value == "else"))
             {
-                consume();
-                consume();
+                Lextoken type = consume();
                 List<Lextoken> condition = new List<Lextoken>();
-                while (peek().Type != LextokenType.OpenParenthesis && peek().Value != "{")
+                if (t.Value != "else")
                 {
-                    condition.Add(consume());
+                    consume();
+                    while (peek().Type != LextokenType.OpenParenthesis && peek().Value != "{")
+                    {
+                        condition.Add(consume());
+                    }
+                    condition.RemoveAt(condition.Count - 1);
                 }
-                condition.RemoveAt(condition.Count - 1);
                 List<Lextoken> selection_tokens = new List<Lextoken>();
                 consume();
                 int open_brackets = 1;
@@ -90,7 +93,26 @@ public class Parser
 
                 Parser selection_parser = new Parser(selection_tokens);
                 List<IParsetoken> selection = selection_parser.Parse();
-                tokens.Add(new Parsetokens.Selection(condition, selection));
+
+                if (type.Value == "if")
+                {
+                    tokens.Add(new Parsetokens.Selection(condition, selection));
+                }
+                else if (type.Value == "elseif")
+                {
+                    Parsetokens.Selection last_selection = (Parsetokens.Selection)tokens.Last();
+                    last_selection.ElseIfs.Add(new Parsetokens.Selection(condition, selection));
+                }
+                else if (type.Value == "else")
+                {
+                    Parsetokens.Selection last_selection = (Parsetokens.Selection)tokens.Last();
+                    last_selection.Else = new Parsetokens.Selection(condition, selection);
+                }
+            }
+            else if (t.Type == LextokenType.Keyword &&
+                     t.Value == "for")
+            {
+
             }
             else
             {

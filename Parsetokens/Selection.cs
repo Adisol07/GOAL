@@ -10,6 +10,8 @@ public class Selection : IParsetoken
 {
     public List<Lextoken> Condition { get; set; } = new List<Lextoken>();
     public List<IParsetoken> Tokens { get; set; } = new List<IParsetoken>();
+    public List<Selection> ElseIfs { get; set; } = new List<Selection>();
+    public Selection Else { get; set; } = null!;
 
     public Selection()
     { }

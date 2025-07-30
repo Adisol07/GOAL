@@ -63,10 +63,24 @@ public class Interpreter
             }
             else if (instruction is Selection sel)
             {
-                bool should_run = sel.Evaluate(this);
-                if (should_run)
+                if (sel.Evaluate(this))
                 {
                     Instructions.InsertRange(current, sel.Tokens);
+                }
+                else
+                {
+                    foreach (Selection elseif in sel.ElseIfs)
+                    {
+                        if (elseif.Evaluate(this))
+                        {
+                            Instructions.InsertRange(current, elseif.Tokens);
+                            break;
+                        }
+                    }
+                    if (sel.Else != null)
+                    {
+                        Instructions.InsertRange(current, sel.Else.Tokens);
+                    }
                 }
             }
 
