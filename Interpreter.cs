@@ -61,6 +61,14 @@ public class Interpreter
             {
                 dynamic result = Functions[funcall.Name.Value].Invoke(funcall.Prepare(this));
             }
+            else if (instruction is Selection sel)
+            {
+                bool should_run = sel.Evaluate(this);
+                if (should_run)
+                {
+                    Instructions.InsertRange(current, sel.Tokens);
+                }
+            }
 
             await Task.Delay(1);
         }

@@ -60,6 +60,38 @@ public class Parser
                 consume();
                 tokens.Add(new Parsetokens.FunctionCall(name, args));
             }
+            else if (t.Type == LextokenType.Keyword &&
+                     t.Value == "if")
+            {
+                consume();
+                consume();
+                List<Lextoken> condition = new List<Lextoken>();
+                while (peek().Type != LextokenType.OpenParenthesis && peek().Value != "{")
+                {
+                    condition.Add(consume());
+                }
+                condition.RemoveAt(condition.Count - 1);
+                List<Lextoken> selection_tokens = new List<Lextoken>();
+                consume();
+                int open_brackets = 1;
+                while (open_brackets > 0)
+                {
+                    if (peek().Type == LextokenType.OpenParenthesis && peek().Value == "{")
+                    {
+                        open_brackets++;
+                    }
+                    if (peek().Type == LextokenType.ClosedParenthesis && peek().Value == "}")
+                    {
+                        open_brackets--;
+                    }
+
+                    selection_tokens.Add(consume());
+                }
+
+                Parser selection_parser = new Parser(selection_tokens);
+                List<IParsetoken> selection = selection_parser.Parse();
+                tokens.Add(new Parsetokens.Selection(condition, selection));
+            }
             else
             {
                 consume();
