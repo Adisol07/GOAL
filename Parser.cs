@@ -40,13 +40,23 @@ public class Parser
                      peek(1).Type == LextokenType.OpenParenthesis)
             {
                 Lextoken name = consume();
-                List<Lextoken> args = new List<Lextoken>();
+                List<List<Lextoken>> args = new List<List<Lextoken>>();
+                args.Add(new List<Lextoken>());
+                int current_arg = 0;
                 consume();
                 while (peek().Type != LextokenType.EndStatement)
                 {
-                    args.Add(consume());
+                    Lextoken at = consume();
+                    if (at.Type == LextokenType.Punctuation)
+                    {
+                        current_arg++;
+                        args.Add(new List<Lextoken>());
+                        continue;
+                    }
+
+                    args[current_arg].Add(at);
                 }
-                args.RemoveAt(args.Count - 1);
+                args.Last().RemoveAt(args.Last().Count - 1);
                 consume();
                 tokens.Add(new Parsetokens.FunctionCall(name, args));
             }
