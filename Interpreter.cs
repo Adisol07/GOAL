@@ -18,7 +18,7 @@ public class Interpreter
     public Dictionary<string, dynamic> Variables { get; set; } = new Dictionary<string, dynamic>();
 
     public Interpreter()
-    { 
+    {
         if (!Functions.ContainsKey("print"))
         {
             Functions.Add("print", (args) =>
@@ -58,6 +58,12 @@ public class Interpreter
                     break;
                 case "-=":
                     interpreter.Variables[varass.Name.Value] -= varass.Evaluate(interpreter);
+                    break;
+                case "++":
+                    interpreter.Variables[varass.Name.Value] += 1;
+                    break;
+                case "--":
+                    interpreter.Variables[varass.Name.Value] -= 1;
                     break;
                 default:
                     throw new Exception($"Invalid assignment operator.");

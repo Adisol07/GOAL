@@ -29,10 +29,10 @@ public class Lexer
                 }
                 tokens.Add(new Lextoken(buff, LextokenType.Number));
             }
-            else if (char.IsLetter(c))
+            else if (char.IsLetter(c) || c == '_')
             {
                 string buff = consume().ToString();
-                while (char.IsLetterOrDigit(peek()))
+                while (char.IsLetterOrDigit(peek()) || peek() == '_')
                 {
                     buff += consume();
                 }
@@ -141,10 +141,22 @@ public class Lexer
 
     private bool is_boolean(string value)
     {
-        return value.ToLower() == "true" || 
+        return value.ToLower() == "true" ||
                value.ToLower() == "false";
     }
 
-    private char peek(int ahead = 0) => raw[current + ahead];
-    private char consume() => raw[current++];
+    private char peek(int ahead = 0)
+    {
+        if (current + ahead >= raw.Length)
+            throw new Exception("Error while tokenizing. Limit: \"" + raw.Length + "\", requested: \"" + (current + ahead) + "\"");
+
+        return raw[current + ahead];
+    }
+    private char consume()
+    {
+        if (current >= raw.Length)
+            throw new Exception("Error while tokenizing. Limit: \"" + raw.Length + "\", c_requested: \"" + current + "\"");
+
+        return raw[current++];
+    }
 }

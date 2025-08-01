@@ -22,8 +22,8 @@ public class Parser
         {
             Lextoken t = peek();
 
-            if (t.Type == LextokenType.Identifier && 
-               (peek(1).Type == LextokenType.Assignment || 
+            if (t.Type == LextokenType.Identifier &&
+               (peek(1).Type == LextokenType.Assignment ||
                peek(1).Type == LextokenType.MathOperator))
             {
                 Lextoken name = consume();
@@ -169,6 +169,18 @@ public class Parser
         return tokens;
     }
 
-    public Lextoken peek(int ahead = 0) => lextokens[current + ahead];
-    public Lextoken consume() => lextokens[current++];
+    public Lextoken peek(int ahead = 0)
+    {
+        if (current + ahead >= lextokens.Count)
+            throw new Exception("Error while parsing. Limit: \"" + lextokens.Count + "\", requested: \"" + (current + ahead) + "\"");
+
+        return lextokens[current + ahead];
+    }
+    public Lextoken consume()
+    {
+        if (current >= lextokens.Count)
+            throw new Exception("Error while parsing. Limit: \"" + lextokens.Count + "\", requested: \"" + current + "\"");
+
+        return lextokens[current++];
+    }
 }
