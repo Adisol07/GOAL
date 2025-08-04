@@ -11,6 +11,7 @@ class Program
     static string usr = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     static Dictionary<string, Goal> goals = new Dictionary<string, Goal>();
     static Table goal_table = new Table().Centered();
+    static int selected_goal = -1;
 
     static async Task Main(string[] args)
     {
@@ -40,52 +41,43 @@ class Program
                     ctx.Refresh();
                 });
 
-            AnsiConsole.Foreground = Color.Grey37;
-            AnsiConsole.WriteLine("Actions: ");
-            AnsiConsole.WriteLine("[1] Open");
-            AnsiConsole.WriteLine("[2] Delete");
-            string action = AnsiConsole.Prompt<string>(new TextPrompt<string>("Action: "));
-            switch (action.ToLower())
+            ConsoleKeyInfo key = Console.ReadKey(true);
+            if (key.Key == ConsoleKey.Escape)
             {
-                case "1":
-                case "o":
-                case "op":
-                case "ope":
-                case "open":
-                    string open = AnsiConsole.Prompt<string>(new TextPrompt<string>("Goal name: "));
-                    if (!goals.ContainsKey(open))
-                    {
-                        AnsiConsole.Foreground = Color.Red1;
-                        AnsiConsole.WriteLine("\"" + open + "\" does not exist.");
-                        await Task.Delay(2000);
-                        break;
-                    }
-                    await goals[open].Run();
-                    AnsiConsole.Markup("[yellow]Press ANY key to continue...[/]");
-                    Console.ReadKey(true);
-                    break;
+                Environment.Exit(0);
+            }
+            else if (key.Key == ConsoleKey.UpArrow)
+            {
+                if (selected_goal > 0)
+                {
+                    selected_goal--;
+                }
+            }
+            else if (key.Key == ConsoleKey.DownArrow)
+            {
+                if (selected_goal < goal_table.Rows.Count - 1)
+                {
+                    selected_goal++;
+                }
+            }
+            else if (key.Key == ConsoleKey.Enter)
+            {
+                await goals.ElementAt(selected_goal).Value.Run();
+                AnsiConsole.Markup("[yellow]Press ANY key to continue...[/]");
+                Console.ReadKey(true);
+                continue;
+            }
+            else if (key.Key == ConsoleKey.Backspace || key.Key == ConsoleKey.Delete || key.Key == ConsoleKey.X || key.Key == ConsoleKey.D)
+            {
 
-                case "2":
-                case "d":
-                case "de":
-                case "del":
-                case "dele":
-                case "delet":
-                case "delete":
-                    string delete = AnsiConsole.Prompt<string>(new TextPrompt<string>("Goal name: "));
-                    break;
-
-                default:
-                    AnsiConsole.Foreground = Color.Red1;
-                    AnsiConsole.WriteLine("Invalid action.");
-                    await Task.Delay(2000);
-                    break;
             }
         }
     }
 
     static void LoadGoals()
     {
+        Style selected_style = new Style(Color.Yellow, null, Decoration.Bold);
+
         goals.Clear();
         goal_table.Rows.Clear();
         string[] goal_files = Directory.GetFiles(config.GoalsPath.ReplacePath(), "*.goal");
@@ -94,7 +86,10 @@ class Program
             Goal goal = Goal.Load(goal_files[gf]);
             goals.Add(goal.Name, goal);
 
-            goal_table.AddRow(new Text(goal.Name), new Text(goal.Created.ToString()), new Text(goal.Status));
+            goal_table.AddRow(
+                    new Text(goal.Name, (gf == selected_goal ? selected_style : null)),
+                    new Text(goal.Created.ToString(), (gf == selected_goal ? selected_style : null)),
+                    new Text(goal.Status, (gf == selected_goal ? selected_style : null)));
         }
     }
 
